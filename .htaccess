@@ -1,0 +1,52 @@
+# Désactiver la mise en cache pour le développement
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+</IfModule>
+
+# Activer la réécriture d'URL
+RewriteEngine On
+
+# Rediriger toutes les requêtes vers index.html (pour les routes côté client)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.html [L]
+
+# Protéger les fichiers sensibles
+<Files .htaccess>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Empêcher l'accès aux fichiers de sauvegarde
+<FilesMatch "\.(bak|config|sql|ini|log|sh|inc|swp|dist)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Empêcher l'accès aux dossiers sensibles
+RedirectMatch 404 /\.git
+RedirectMatch 404 /\.svn
+RedirectMatch 404 /\.env
+
+# Activer la compression Gzip pour améliorer les performances
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
+</IfModule>
+
+# Forcer le chargement en HTTPS (si vous avez un certificat SSL)
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Bloquer l'accès aux fichiers de logs
+<FilesMatch "\.(log|txt)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Empêcher le listing des répertoires
+Options -Indexes
+
+# Rediriger les erreurs 404 vers une page personnalisée (optionnel)
+ErrorDocument 404 /404.html
